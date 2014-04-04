@@ -1,25 +1,34 @@
-#!/usr/bin/env python
-#
-# Copyright 2007 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
 import webapp2
+from google.appengine.ext import db
+
+class A(db.Model):
+  a = db.BooleanProperty()
+  n = db.IntegerProperty()
 
 class MainHandler(webapp2.RequestHandler):
-    def get(self):
-        self.response.write('Hello world!')
 
-app = webapp2.WSGIApplication([
-    ('/', MainHandler)
+  def get(self):  # pylint:disable-msg=invalid-name
+    messages = []
+    
+    a = A(a = True)
+    b = A(a = True)
+
+    messages.append('hello')
+    messages.append(a == b)
+    messages.append(dir(a))
+    messages.append(db.to_dict(a))
+    messages.append(db.model_to_protobuf(a))
+    messages.append(db.model_to_protobuf(a).ByteSize())
+    messages.append(db.model_to_protobuf(a).Encode())
+    messages.append(len(db.model_to_protobuf(a).Encode()))
+
+    messages.append(db.model_to_protobuf(a) == db.model_to_protobuf(b))
+    messages.append(type(db.model_to_protobuf(a)).__name__)
+    messages.append(dir(type(db.model_to_protobuf(a))))
+
+    self.response.write('<br/>'.join(map(str,messages)))
+
+APP = webapp2.WSGIApplication([
+    ('/.*', MainHandler),
 ], debug=True)
+
